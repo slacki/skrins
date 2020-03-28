@@ -41,6 +41,7 @@ func main() {
 	<-exit
 }
 
+// flags parses flags
 func flags() {
 	flag.StringVar(&screensPath, "p", "", "Path to where screenshots are saved locally")
 	flag.StringVar(&remoteHost, "r", "", "Remote host, e.g. example.com:2003 or 43.56.122.31:22")
@@ -97,6 +98,7 @@ func showNotification(url string) {
 	notify.Push("Screenshot uploaded!", url, "", notificator.UR_NORMAL)
 }
 
+// copyToClipboard puts a string to clipboards
 func copyToClipboard(s string) {
 	clipboard.WriteAll(s)
 }
