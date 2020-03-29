@@ -2,7 +2,7 @@
 
 Uploads screenshots from given directory to remote location via sftp. 
 
-Usage
+Usage:
 
 ```
 go build

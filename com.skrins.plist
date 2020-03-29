@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.skrins.agent</string>
+	<key>LimitLoadToSessionType</key>
+	<string>Aqua</string>
+	<key>ProgramArguments</key>
+	<array>
+        <string>/Users/slacki/projects/skrins/skrins</string>
+		<string>-p</string>
+		<string>/Users/slacki/Documents/screenshots</string>
+        <string>-r</string>
+        <string>slacki.io:22</string>
+        <string>-ru</string>
+        <string>i</string>
+        <string>-pk</string>
+        <string>/Users/slacki/.ssh/id_rsa</string>
+        <string>-rp</string>
+        <string>/home/i/i</string>
+        <string>-url</string>
+        <string>https://i.slacki.io</string>
+	</array>
+	<key>StandardErrorPath</key>
+	<string>/var/log/skrins.err.log</string>
+	<key>StandardOutPath</key>
+	<string>/var/log/skrins.out.log</string>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>
