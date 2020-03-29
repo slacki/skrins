@@ -23,9 +23,9 @@
         <string>https://i.slacki.io</string>
 	</array>
 	<key>StandardErrorPath</key>
-	<string>/var/log/skrins.err.log</string>
+	<string>/tmp/skrins.err.log</string>
 	<key>StandardOutPath</key>
-	<string>/var/log/skrins.out.log</string>
+	<string>/tmp/skrins.out.log</string>
 	<key>RunAtLoad</key>
 	<true/>
 </dict>
