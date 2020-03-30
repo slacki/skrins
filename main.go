@@ -81,7 +81,11 @@ func watchAndUpload(client *sftp.Client) {
 			}
 
 			remoteFilename := fmt.Sprintf("%s.%s", uuid.Must(uuid.NewV4(), nil).String(), ext)
-			uploadObjectToDestination(client, screensPath+f.Name(), remoteFilename)
+			err = uploadObjectToDestination(client, screensPath+f.Name(), remoteFilename)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 			url := baseURL + remoteFilename
 			copyToClipboard(url)
 			showNotification(url)
@@ -141,26 +145,28 @@ func allowedExtension(ext string) bool {
 }
 
 // uploadObjectToDestination uploads file to a remote host
-func uploadObjectToDestination(client *sftp.Client, src, dest string) {
+func uploadObjectToDestination(client *sftp.Client, src, dest string) error {
 	// create destination file
 	// remotePath is expected to have a trailing slash
 	dstFile, err := client.OpenFile(remotePath+dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer dstFile.Close()
 
 	// open local file
 	srcReader, err := os.Open(src)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// copy source file to destination file
 	bytes, err := io.Copy(dstFile, srcReader)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("Total of %d bytes copied\n", bytes)
+
+	return nil
 }
