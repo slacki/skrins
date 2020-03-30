@@ -32,12 +32,7 @@ func main() {
 
 	flags()
 
-	SFTPClient, err := newSFTPClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go watchAndUpload(SFTPClient)
+	go watchAndUpload()
 	<-exit
 }
 
@@ -59,7 +54,7 @@ func flags() {
 // watchAndUpload takes anything .png or .jpg and uploads it to the server.
 // Files are removed after upload and notification is displayed.
 // An URL is copied to the clipboard
-func watchAndUpload(client *sftp.Client) {
+func watchAndUpload() {
 	for {
 		time.Sleep(time.Second)
 
@@ -81,7 +76,7 @@ func watchAndUpload(client *sftp.Client) {
 			}
 
 			remoteFilename := fmt.Sprintf("%s.%s", uuid.Must(uuid.NewV4(), nil).String(), ext)
-			err = uploadObjectToDestination(client, screensPath+f.Name(), remoteFilename)
+			err = uploadObjectToDestination(screensPath+f.Name(), remoteFilename)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -105,6 +100,19 @@ func showNotification(url string) {
 // copyToClipboard puts a string to clipboards
 func copyToClipboard(s string) {
 	clipboard.WriteAll(s)
+}
+
+// allowedExtension determines whether it is allowed to upload a file with that extension
+func allowedExtension(ext string) bool {
+	allowed := []string{"jpg", "jpeg", "png", "gif", "webm", "mp4"}
+
+	for _, e := range allowed {
+		if ext == e {
+			return true
+		}
+	}
+
+	return false
 }
 
 // newSFTPClient creates new sFTP client
@@ -131,21 +139,14 @@ func newSFTPClient() (*sftp.Client, error) {
 	return sftp.NewClient(client)
 }
 
-// allowedExtension determines whether it is allowed to upload a file with that extension
-func allowedExtension(ext string) bool {
-	allowed := []string{"jpg", "jpeg", "png", "gif", "webm", "mp4"}
-
-	for _, e := range allowed {
-		if ext == e {
-			return true
-		}
-	}
-
-	return false
-}
-
 // uploadObjectToDestination uploads file to a remote host
-func uploadObjectToDestination(client *sftp.Client, src, dest string) error {
+func uploadObjectToDestination(src, dest string) error {
+	client, err := newSFTPClient()
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
 	// create destination file
 	// remotePath is expected to have a trailing slash
 	dstFile, err := client.OpenFile(remotePath+dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
