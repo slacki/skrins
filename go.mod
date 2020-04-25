@@ -8,6 +8,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/atotto/clipboard v0.1.2
 	github.com/keybase/go-notifier v0.0.0-20160519183414-17405ab3fd75
+	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/pkg/sftp v1.11.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/slacki/go-notifier v0.0.0-20200327213319-6fb0128d8c97

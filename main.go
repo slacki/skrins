@@ -13,8 +13,8 @@ import (
 
 	"github.com/0xAX/notificator"
 	"github.com/atotto/clipboard"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/pkg/sftp"
-	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -75,7 +75,7 @@ func watchAndUpload() {
 				continue
 			}
 
-			remoteFilename := fmt.Sprintf("%s.%s", uuid.Must(uuid.NewV4(), nil).String(), ext)
+			remoteFilename := fmt.Sprintf("%s.%s", shortuuid.New(), ext)
 			err = uploadObjectToDestination(screensPath+f.Name(), remoteFilename)
 			if err != nil {
 				log.Println(err)
