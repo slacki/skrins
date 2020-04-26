@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -69,14 +71,25 @@ func watchAndUpload() {
 			if f.IsDir() {
 				continue
 			}
+			fullPath := screensPath + f.Name()
 
 			ext := fileExtRegexp.FindAllStringSubmatch(f.Name(), -1)[0][1]
 			if !allowedExtension(ext) {
 				continue
 			}
+			if ext == "mov" {
+				log.Println("Detected .mov file, converting to mp4")
+				result := ffmpegTranscode(fullPath, screensPath+"out.mp4")
+				if result {
+					// remove the .mov file if successfully transcoded
+					// next pass will upload the file
+					os.Remove(fullPath)
+					continue
+				}
+			}
 
 			remoteFilename := fmt.Sprintf("%s.%s", shortuuid.New(), ext)
-			err = uploadObjectToDestination(screensPath+f.Name(), remoteFilename)
+			err = uploadObjectToDestination(fullPath, remoteFilename)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -84,7 +97,7 @@ func watchAndUpload() {
 			url := baseURL + remoteFilename
 			copyToClipboard(url)
 			showNotification(url)
-			os.Remove(screensPath + f.Name())
+			os.Remove(fullPath)
 		}
 	}
 }
@@ -113,6 +126,25 @@ func allowedExtension(ext string) bool {
 	}
 
 	return false
+}
+
+// ffmpegTranscode transcodes a media file.
+func ffmpegTranscode(fileIn, fileOut string) bool {
+	cmd := exec.Command("/usr/local/bin/ffmpeg", "-i", fileIn, fileOut)
+	var stderr bytes.Buffer
+	var stdout bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+	err := cmd.Run()
+
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	log.Println("[ffmpeg stderr]", stderr.String())
+	log.Println("[ffmpeg stdout]", stdout.String())
+
+	return true
 }
 
 // newSFTPClient creates new sFTP client
