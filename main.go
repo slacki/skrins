@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/0xAX/notificator"
+	"github.com/atotto/clipboard"
+	"github.com/fsnotify/fsnotify"
+	"github.com/lithammer/shortuuid/v3"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,16 +17,10 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	"time"
-
-	"github.com/0xAX/notificator"
-	"github.com/atotto/clipboard"
-	"github.com/lithammer/shortuuid/v3"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 )
 
 var notify *notificator.Notificator
+var watcher *fsnotify.Watcher
 
 var screensPath string
 var remoteHost string
@@ -30,11 +30,25 @@ var remotePath string
 var baseURL string
 
 func main() {
-	exit := make(chan bool)
+	var err error
 
 	flags()
 
-	go watchAndUpload()
+	// creates a new file watcher
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		panic(err)
+	}
+	defer watcher.Close()
+
+	exit := make(chan bool)
+
+	go watch()
+
+	if err := watcher.Add(screensPath); err != nil {
+		panic(err)
+	}
+
 	<-exit
 }
 
@@ -56,24 +70,47 @@ func flags() {
 // watchAndUpload takes anything .png or .jpg and uploads it to the server.
 // Files are removed after upload and notification is displayed.
 // An URL is copied to the clipboard
-func watchAndUpload() {
+func watch() {
 	for {
-		time.Sleep(time.Second)
-
-		fileExtRegexp, _ := regexp.Compile(".*?\\.(\\w+)$")
-
-		fi, err := ioutil.ReadDir(screensPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, f := range fi {
-			if f.IsDir() {
-				continue
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return
 			}
-			fullPath := screensPath + f.Name()
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				upload()
+			}
+			if event.Op&fsnotify.Create == fsnotify.Create {
+				upload()
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+			log.Println("error:", err)
+		}
+	}
+}
 
-			ext := fileExtRegexp.FindAllStringSubmatch(f.Name(), -1)[0][1]
+func upload() {
+	fileExtRegexp, _ := regexp.Compile(".*?\\.(\\w+)$")
+
+	fi, err := ioutil.ReadDir(screensPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range fi {
+		fmt.Println(f.Name())
+		if f.IsDir() {
+			continue
+		}
+		fullPath := screensPath + f.Name()
+
+		matches := fileExtRegexp.FindAllStringSubmatch(f.Name(), -1)
+
+		if len(matches) > 0 && len(matches[0]) > 1 {
+			ext := matches[0][1]
 			if !allowedExtension(ext) {
 				continue
 			}
@@ -99,6 +136,7 @@ func watchAndUpload() {
 			showNotification(url)
 			os.Remove(fullPath)
 		}
+
 	}
 }
 
