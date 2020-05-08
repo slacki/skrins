@@ -4,12 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/0xAX/notificator"
-	"github.com/atotto/clipboard"
-	"github.com/fsnotify/fsnotify"
-	"github.com/lithammer/shortuuid/v3"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +11,13 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/0xAX/notificator"
+	"github.com/atotto/clipboard"
+	"github.com/fsnotify/fsnotify"
+	"github.com/lithammer/shortuuid/v3"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 var notify *notificator.Notificator
@@ -155,7 +156,7 @@ func copyToClipboard(s string) {
 
 // allowedExtension determines whether it is allowed to upload a file with that extension
 func allowedExtension(ext string) bool {
-	allowed := []string{"jpg", "jpeg", "png", "gif", "webm", "mp4", "mov"}
+	allowed := []string{"jpg", "jpeg", "png", "gif", "webm", "mp4", "mov", "zip"}
 
 	for _, e := range allowed {
 		if ext == e {
