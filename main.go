@@ -156,7 +156,7 @@ func copyToClipboard(s string) {
 
 // allowedExtension determines whether it is allowed to upload a file with that extension
 func allowedExtension(ext string) bool {
-	allowed := []string{"jpg", "jpeg", "png", "gif", "webm", "mp4", "mov", "zip"}
+	allowed := []string{"jpg", "jpeg", "png", "gif", "webm", "mp4", "mov", "zip", "tar", "tar.gz", "tar.bz2"}
 
 	for _, e := range allowed {
 		if ext == e {
