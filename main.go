@@ -68,9 +68,6 @@ func flags() {
 	baseURL = strings.TrimRight(baseURL, "/") + "/"
 }
 
-// watchAndUpload takes anything .png or .jpg and uploads it to the server.
-// Files are removed after upload and notification is displayed.
-// An URL is copied to the clipboard
 func watch() {
 	for {
 		select {
